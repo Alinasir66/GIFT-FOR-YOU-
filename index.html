@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>For You ❤️</title>
+
+  <!-- Elegant romantic font -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle, #2a001a, #000);
+    }
+
+    /* Name text */
+    #name {
+      position: absolute;
+      bottom: 40px;
+      width: 100%;
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      color: #ffb6d5;
+      text-shadow: 0 0 20px hotpink;
+      letter-spacing: 3px;
+    }
+
+    /* Hearts */
+    .heart {
+      position: absolute;
+      font-size: 28px;
+      color: pink;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .tl { top: 20px; left: 20px; }
+    .tr { top: 20px; right: 20px; }
+    .bl { bottom: 20px; left: 20px; }
+    .br { bottom: 20px; right: 20px; }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Upright hearts -->
+  <div class="heart tl">❤️</div>
+  <div class="heart tr">❤️</div>
+  <div class="heart bl">❤️</div>
+  <div class="heart br">❤️</div>
+
+  <!-- Personalized name -->
+  <div id="name">❤️A FLOWER FOR YOU RARA❤️</div>
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+  <script>
+    /************************************************
+     * SCENE SETUP
+     ************************************************/
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    // Top-down view
+    camera.position.set(0, 15, 0);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    /************************************************
+     * LIGHTING
+     ************************************************/
+    scene.add(new THREE.AmbientLight(0xffc0cb, 0.6));
+
+    const mainLight = new THREE.PointLight(0xff4d88, 2);
+    mainLight.position.set(5, 10, 5);
+    scene.add(mainLight);
+
+    /************************************************
+     * ROSE CREATION
+     ************************************************/
+    const rose = new THREE.Group();
+    scene.add(rose);
+
+    const petalMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff2a5c,
+      roughness: 0.45,
+      metalness: 0.25,
+      side: THREE.DoubleSide
+    });
+
+    // Creates a curved petal shape
+    function createPetal(scale) {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0);
+      shape.bezierCurveTo(0.3, 1.2, 0.9, 1.6, 0, 2.2);
+      shape.bezierCurveTo(-0.9, 1.6, -0.3, 1.2, 0, 0);
+
+      const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: 0.12,
+        bevelEnabled: true,
+        bevelThickness: 0.08,
+        bevelSize: 0.08,
+        bevelSegments: 6
+      });
+
+      const petal = new THREE.Mesh(geometry, petalMaterial);
+      petal.scale.set(scale, scale, scale);
+      petal.rotation.x = Math.PI / 2;
+      return petal;
+    }
+
+    // Spiral arrangement (natural rose phyllotaxis)
+    let angle = 0;
+    for (let i = 0; i < 70; i++) {
+      const petal = createPetal(0.45 + i * 0.008);
+
+      const radius = i * 0.045;
+      angle += 0.38;
+
+      petal.position.set(
+        Math.cos(angle) * radius,
+        0,
+        Math.sin(angle) * radius
+      );
+
+      petal.rotation.z = angle;
+      petal.rotation.y = (Math.random() - 0.5) * 0.4;
+
+      rose.add(petal);
+    }
+
+    /************************************************
+     * ANIMATION (gentle bloom & breathing)
+     ************************************************/
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      time += 0.01;
+
+      // Soft rotation
+      rose.rotation.y += 0.0015;
+
+      // Gentle breathing effect
+      const scale = 1 + Math.sin(time) * 0.015;
+      rose.scale.set(scale, scale, scale);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    /************************************************
+     * RESPONSIVE RESIZE
+     ************************************************/
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+
+</body>
+</html>
